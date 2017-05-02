@@ -11,4 +11,4 @@
 |
 */
 
-Route::middleware('xhubsig')->get('/hook/{slug}', 'HookController@takePayloadAction');
+Route::middleware('xhubsig')->post('/hook/{slug}', 'HookController@takePayloadAction');
