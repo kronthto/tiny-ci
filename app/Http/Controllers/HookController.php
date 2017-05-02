@@ -37,7 +37,7 @@ class HookController extends Controller
 
         $project = Project::findBySlug($slug);
 
-        $pushRevision = $payload['ref'];
+        $pushRevision = $payload['after'];
 
         $commit = Commit::query()
             ->where('project_id', '=', $project->id)
