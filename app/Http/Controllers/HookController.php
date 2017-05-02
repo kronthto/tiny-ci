@@ -33,11 +33,11 @@ class HookController extends Controller
      */
     public function takePayloadAction(Request $request, string $slug)
     {
-        $payload = $request->json();
+        $payload = $request->json()->all();
 
         $project = Project::findBySlug($slug);
 
-        $pushRevision = $payload->ref;
+        $pushRevision = $payload['ref'];
 
         $commit = Commit::query()
             ->where('project_id', '=', $project->id)
