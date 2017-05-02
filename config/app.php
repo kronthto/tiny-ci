@@ -13,6 +13,7 @@ return [
     */
 
     'name' => env('APP_NAME', 'Tiny CI'),
+    'contextprefix' => env('GH_CONTEXT_PREFIX', 'tiny-ci'),
 
     /*
     |--------------------------------------------------------------------------

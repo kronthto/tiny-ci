@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $secret
  * @property string $slug
  * @property string $repo
+ * @property string $task
  * @property Commit[] $commits
  */
 class Project extends Model
@@ -25,5 +26,17 @@ class Project extends Model
     public function commits()
     {
         return $this->hasMany(Commit::class);
+    }
+
+    /**
+     * @param string $slug
+     *
+     * @return Project|null
+     */
+    public static function findBySlug(string $slug): ?Project
+    {
+        return static::query()
+            ->where('slug', '=', $slug)
+            ->first();
     }
 }
