@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Commit;
-use App\Services\GithubStatusService;
+use App\Services\TestRunnerService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -32,12 +32,6 @@ class TestCommit implements ShouldQueue
      */
     public function handle()
     {
-        sleep(15);
-        app(GithubStatusService::class)->postStatus(
-            $this->commit->project,
-            $this->commit->hash,
-            'success',
-            'TEST ONLY'
-        );
+        app(TestRunnerService::class)->runTestsForCommit($this->commit);
     }
 }
