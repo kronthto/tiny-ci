@@ -30,21 +30,7 @@ class TestRunnerService
     {
         $project = $commit->project;
 
-        chdir(storage_path('repos/'.$project->slug));
-
-        $config = null;
-        try {
-            $config = \GuzzleHttp\json_decode(file_get_contents(static::CONFIG_FILE));
-        } catch (\Exception $e) {
-            $this->githubStatusService->postStatus(
-                $project,
-                $commit->hash,
-                'failure',
-                'Error reading '.static::CONFIG_FILE
-            );
-
-            return;
-        }
+        chdir(storage_path('app/repos/'.$project->slug));
 
         $gitExec = config('app.gitexec');
         $prepCommands = [
@@ -69,11 +55,25 @@ class TestRunnerService
                     'Error executing preparation command'
                 );
 
-                $commit->passing = false;
-                $commit->save();
-
                 return;
             }
+        }
+
+        $config = null;
+        try {
+            $config = \GuzzleHttp\json_decode(file_get_contents(static::CONFIG_FILE));
+        } catch (\Exception $e) {
+            $this->githubStatusService->postStatus(
+                $project,
+                $commit->hash,
+                'failure',
+                'Error reading '.static::CONFIG_FILE
+            );
+
+            $commit->passing = false;
+            $commit->save();
+
+            return;
         }
 
         foreach ($config->before as $i => $beforeCmd) {
