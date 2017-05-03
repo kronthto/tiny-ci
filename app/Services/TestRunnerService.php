@@ -30,7 +30,7 @@ class TestRunnerService
     {
         $project = $commit->project;
 
-        chdir(storage_path('repos/'.$project->repo));
+        chdir(storage_path('repos/'.$project->slug));
 
         $config = null;
         try {
@@ -69,6 +69,9 @@ class TestRunnerService
                     'Error executing preparation command'
                 );
 
+                $commit->passing = false;
+                $commit->save();
+
                 return;
             }
         }
@@ -90,6 +93,9 @@ class TestRunnerService
                     'Error executing before commands'
                 );
 
+                $commit->passing = false;
+                $commit->save();
+
                 return;
             }
         }
@@ -98,6 +104,9 @@ class TestRunnerService
 
         if ($returnCode !== 0) {
             $message = end($output);
+
+            $commit->passing = false;
+            $commit->save();
 
             $this->githubStatusService->postStatus($project, $commit->hash, 'error', $message);
         } else {
@@ -112,6 +121,9 @@ class TestRunnerService
             if (is_null($message)) {
                 $message = end($output);
             }
+
+            $commit->passing = true;
+            $commit->save();
 
             $this->githubStatusService->postStatus($project, $commit->hash, 'success', $message);
         }
