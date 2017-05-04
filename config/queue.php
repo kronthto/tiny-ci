@@ -45,7 +45,7 @@ return [
             'driver' => 'beanstalkd',
             'host' => 'localhost',
             'queue' => 'tinyci',
-            'retry_after' => 90,
+            'retry_after' => env('QUEUE_RETRY', 180),
         ],
 
         'redis' => [
