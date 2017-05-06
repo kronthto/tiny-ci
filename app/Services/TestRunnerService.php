@@ -37,7 +37,7 @@ class TestRunnerService
             "export DEBIAN_FRONTEND=noninteractive",
             "$gitExec fetch",
             "$gitExec reset --hard",
-            "$gitExec checkout ".$commit->hash,
+            "$gitExec checkout -f ".$commit->hash,
         ];
         foreach ($prepCommands as $prepCmd) {
             exec($prepCmd, $outp, $retCode);
