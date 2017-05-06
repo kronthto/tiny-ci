@@ -35,9 +35,17 @@ class HookController extends Controller
     {
         $payload = $request->json()->all();
 
-        $project = Project::findBySlug($slug);
+        if (!isset($payload['after'])) {
+            return response('Need a revision to check', 400);
+        }
 
         $pushRevision = $payload['after'];
+
+        if ($payload['deleted'] === true || $pushRevision === '0000000000000000000000000000000000000000') {
+            return response('Doing nothing on delete / 000.. events');
+        }
+
+        $project = Project::findBySlug($slug);
 
         $commit = Commit::query()
             ->where('project_id', '=', $project->id)
