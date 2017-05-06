@@ -34,6 +34,7 @@ class TestRunnerService
 
         $gitExec = config('app.gitexec');
         $prepCommands = [
+            "export DEBIAN_FRONTEND=noninteractive",
             "$gitExec fetch",
             "$gitExec reset --hard",
             "$gitExec checkout ".$commit->hash,
