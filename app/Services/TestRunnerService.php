@@ -115,7 +115,7 @@ class TestRunnerService
             foreach ($output as $line) {
                 $timeConsumed = preg_match('/^Time:\s+(.+),/', $line, $matches);
                 if ($timeConsumed === 1) {
-                    $message = $matches[1];
+                    $message = 'Passed in '.$matches[1];
                     break;
                 }
             }
