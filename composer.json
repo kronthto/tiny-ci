@@ -1,9 +1,16 @@
 {
-    "name": "laravel/laravel",
-    "description": "The Laravel Framework.",
-    "keywords": ["framework", "laravel"],
+    "name": "kronthto/tiny-ci",
+    "description": "Lightweight testing automation",
+    "keywords": ["testing", "Github", "CI", "commit", "status", "Webhook"],
     "license": "MIT",
     "type": "project",
+    "authors": [
+        {
+            "name": "Tobias Kronthaler",
+            "email": "kronthto@gmail.com"
+        }
+    ],
+    "homepage": "https://github.com/kronthto/tiny-ci",
     "require": {
         "php": ">=7.1.0",
         "guzzlehttp/guzzle": "^6.2",
@@ -31,12 +38,6 @@
         }
     },
     "scripts": {
-        "post-root-package-install": [
-            "php -r \"file_exists('.env') || copy('.env.example', '.env');\""
-        ],
-        "post-create-project-cmd": [
-            "php artisan key:generate"
-        ],
         "post-install-cmd": [
             "Illuminate\\Foundation\\ComposerScripts::postInstall",
             "php artisan optimize"
@@ -44,7 +45,8 @@
         "post-update-cmd": [
             "Illuminate\\Foundation\\ComposerScripts::postUpdate",
             "php artisan optimize"
-        ]
+        ],
+        "test": "phpunit --verbose"
     },
     "config": {
         "preferred-install": "dist",
