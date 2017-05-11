@@ -1,7 +1,7 @@
 {
     "name": "kronthto/tiny-ci",
     "description": "Lightweight testing automation",
-    "keywords": ["testing", "Github", "CI", "commit", "status", "Webhook"],
+    "keywords": ["testing", "Github", "CI", "commit", "status", "Webhook", "devops"],
     "license": "MIT",
     "type": "project",
     "authors": [
