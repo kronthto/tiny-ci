@@ -22,7 +22,7 @@ class TestProcess
     {
         $this->log[] = '$ '.$command;
 
-        exec($command, $outp, $retCode);
+        exec($command.' 2>&1', $outp, $retCode);
 
         $this->log = array_merge($this->log, $outp);
 
