@@ -49,7 +49,8 @@ class GithubStatusTest extends TestCase
             'repo' => 'vendor/repo',
         ]);
 
-        $service->postStatus($project, 'f55429aaa7b06e73ab588f84cd4f89636891f50e', 'success', 'It worked');
+        $service->postStatus($project, 'f55429aaa7b06e73ab588f84cd4f89636891f50e', 'success', 'It worked',
+            'http://foo.bar/baz');
 
         $this->assertSame(1, sizeof($container));
 
@@ -66,5 +67,6 @@ class GithubStatusTest extends TestCase
         $this->assertNotEmpty($payload->context);
         $this->assertEquals('success', $payload->state);
         $this->assertEquals('It worked', $payload->description);
+        $this->assertEquals('http://foo.bar/baz', $payload->target_url);
     }
 }
