@@ -19,8 +19,6 @@ class BuildLogController extends Controller
             return response('Invalid token', 401);
         }
 
-        return response()
-            ->setContent($commit->joblog)
-            ->headers->set('Content-Type', 'text/plain');
+        return response($commit->joblog, 200, ['Content-Type' => 'text/plain']);
     }
 }
