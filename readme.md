@@ -11,6 +11,7 @@ This tool strives to be a lightweight testing automation utility for your privat
 * Verification of [*X-Hub-Signature*](https://developer.github.com/webhooks/securing/)
 * Test preparation and script configurable via [config-file](#test-build-configuration)
 * Return results to Github using [Statuses](https://developer.github.com/v3/repos/statuses/)
+* Track and provide build-log via protected URL
 
 ## Install
 

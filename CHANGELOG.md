@@ -5,6 +5,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2017-05-20
+### Added
+- Track and provide build-log via protected URL
+
+### Changed
+- Error handling duplicate-code moved to own classes/methods
+
 ## 0.1.0 - 2017-05-07
 ### Added
 - Basic Project setup
@@ -13,4 +20,5 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Webhook API
 - Test config parsing & running
 
-[Unreleased]: https://github.com/kronthto/tiny-ci/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/kronthto/tiny-ci/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/kronthto/tiny-ci/compare/v0.1.0...0.2.0
