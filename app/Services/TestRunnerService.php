@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Commit;
+use App\Exceptions\CommandFailedException;
 
 class TestRunnerService
 {
@@ -21,6 +22,20 @@ class TestRunnerService
         $this->githubStatusService = $githubStatusService;
     }
 
+    protected function finalize(Commit $commit, TestProcess $testProcess, string $state, string $message)
+    {
+        $this->githubStatusService->postStatus(
+            $commit->project,
+            $commit->hash,
+            $state,
+            $message,
+            $commit->buildUrl()
+        );
+
+        $commit->joblog = implode(PHP_EOL, $testProcess->getLog());
+        $commit->save();
+    }
+
     /**
      * Runs the test process.
      *
@@ -29,32 +44,22 @@ class TestRunnerService
     public function runTestsForCommit(Commit $commit)
     {
         $project = $commit->project;
+        $jobProcess = new TestProcess();
 
         chdir(storage_path('app/repos/'.$project->slug));
 
         $gitExec = config('app.gitexec');
         $prepCommands = [
-            "export DEBIAN_FRONTEND=noninteractive",
+            'export DEBIAN_FRONTEND=noninteractive',
             "$gitExec fetch",
             "$gitExec reset --hard",
             "$gitExec checkout -f ".$commit->hash,
         ];
         foreach ($prepCommands as $prepCmd) {
-            exec($prepCmd, $outp, $retCode);
-            if ($retCode !== 0) {
-                logger()->error('Error executing preparation cmd', [
-                    'command' => $prepCmd,
-                    'commit' => $commit->toArray(),
-                    'project' => $project->toArray(),
-                    'output' => $outp,
-                ]);
-
-                $this->githubStatusService->postStatus(
-                    $project,
-                    $commit->hash,
-                    'failure',
-                    'Error executing preparation command'
-                );
+            try {
+                $jobProcess->exec($prepCmd);
+            } catch (CommandFailedException $e) {
+                $this->finalize($commit, $jobProcess, 'failure', 'Error executing preparation cmd');
 
                 return;
             }
@@ -64,69 +69,49 @@ class TestRunnerService
         try {
             $config = \GuzzleHttp\json_decode(file_get_contents(static::CONFIG_FILE));
         } catch (\Exception $e) {
-            $this->githubStatusService->postStatus(
-                $project,
-                $commit->hash,
-                'failure',
-                'Error reading '.static::CONFIG_FILE
-            );
-
             $commit->passing = false;
-            $commit->save();
+            $this->finalize($commit, $jobProcess, 'failure', 'Error reading '.static::CONFIG_FILE);
 
             return;
         }
 
         foreach ($config->before as $i => $beforeCmd) {
-            exec($beforeCmd, $outp, $retCode);
-            if ($retCode !== 0) {
-                logger()->error('Error executing before cmd '.$i, [
-                    'config' => $config,
-                    'commit' => $commit->toArray(),
-                    'project' => $project->toArray(),
-                    'output' => $outp,
-                ]);
-
-                $this->githubStatusService->postStatus(
-                    $project,
-                    $commit->hash,
-                    'failure',
-                    'Error executing before commands'
-                );
-
+            try {
+                $jobProcess->exec($beforeCmd);
+            } catch (CommandFailedException $e) {
                 $commit->passing = false;
-                $commit->save();
+                $this->finalize($commit, $jobProcess, 'failure', 'Error executing before commands');
 
                 return;
             }
         }
 
-        exec($config->script, $output, $returnCode);
-
-        if ($returnCode !== 0) {
-            $message = end($output);
+        $cmdOut = null;
+        try {
+            $cmdOut = $jobProcess->exec($config->script);
+        } catch (CommandFailedException $e) {
+            $cmdOut = $e->getOutput();
+            $message = end($cmdOut);
 
             $commit->passing = false;
-            $commit->save();
+            $this->finalize($commit, $jobProcess, 'error', $message);
 
-            $this->githubStatusService->postStatus($project, $commit->hash, 'error', $message);
-        } else {
-            $message = null;
-            foreach ($output as $line) {
-                $timeConsumed = preg_match('/^Time:\s+(.+),/', $line, $matches);
-                if ($timeConsumed === 1) {
-                    $message = 'Passed in '.$matches[1];
-                    break;
-                }
-            }
-            if (is_null($message)) {
-                $message = end($output);
-            }
-
-            $commit->passing = true;
-            $commit->save();
-
-            $this->githubStatusService->postStatus($project, $commit->hash, 'success', $message);
+            return;
         }
+
+        $message = null;
+        foreach ($cmdOut as $line) {
+            $timeConsumed = preg_match('/^Time:\s+(.+),/', $line, $matches);
+            if ($timeConsumed === 1) {
+                $message = 'Passed in '.$matches[1];
+                break;
+            }
+        }
+        if (is_null($message)) {
+            $message = end($cmdOut);
+        }
+
+        $commit->passing = true;
+        $this->finalize($commit, $jobProcess, 'success', $message);
     }
 }

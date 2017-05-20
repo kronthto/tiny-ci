@@ -32,8 +32,9 @@ class GithubStatusService
      * @param string      $sha
      * @param string      $state
      * @param null|string $message
+     * @param null|string $url
      */
-    public function postStatus(Project $project, string $sha, string $state, ?string $message)
+    public function postStatus(Project $project, string $sha, string $state, ?string $message, ?string $url = null)
     {
         $data = [
             'state' => $state,
@@ -41,6 +42,9 @@ class GithubStatusService
         ];
         if (!is_null($message)) {
             $data['description'] = $message;
+        }
+        if (!is_null($url)) {
+            $data['target_url'] = $url;
         }
 
         $this->client->post(
