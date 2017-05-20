@@ -90,6 +90,7 @@ class TestRunnerService
         try {
             $cmdOut = $jobProcess->exec($config->script);
         } catch (CommandFailedException $e) {
+            $cmdOut = $e->getOutput();
             $message = end($cmdOut);
 
             $commit->passing = false;
