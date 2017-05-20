@@ -7,9 +7,11 @@ cache:
     - $HOME/.composer/cache
 
 before_script:
+  - cp .env.travis .env
   - phpenv config-rm xdebug.ini
   - sleep 5
   - travis_retry composer self-update
   - travis_retry composer install --prefer-dist --no-interaction --no-suggest
+  - php artisan key:generate
 
 script: vendor/bin/phpunit --verbose
