@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $hash
  * @property int $project_id
  * @property bool|null $passing
+ * @property string|null $joblog
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  * @property Project $project
@@ -23,5 +24,22 @@ class Commit extends Model
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function getSecretToken(): string
+    {
+        return hash_hmac('sha256', 'commit'.$this->id,
+            base64_encode(app(\Illuminate\Encryption\Encrypter::class)->getKey())
+        );
+    }
+
+    /**
+     * Builds the URL the build log can be accessed at.
+     *
+     * @return string
+     */
+    public function buildUrl(): string
+    {
+        return url()->route('buildLog', ['commit' => $this, 'token' => $this->getSecretToken()]);
     }
 }
