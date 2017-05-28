@@ -3,7 +3,6 @@
 namespace Tests\Unit;
 
 use App\Commit;
-use App\Project;
 use App\Services\GithubStatusService;
 use App\Services\TestProcess;
 use App\Services\TestRunnerService;
@@ -18,13 +17,9 @@ class TestRunnerServiceTest extends TestCase
      */
     public function testFinalize()
     {
-        $project = new Project();
-        $project->id = 6;
-
         $commit = new Commit();
         $commit->hash = 'beefbeef';
         $commit->id = 5;
-        $commit->project = $project;
         /** @var \Mockery\MockInterface|Commit $commit */
         $commit = \Mockery::instanceMock($commit);
         $commit->shouldReceive('save')->once();
@@ -32,7 +27,7 @@ class TestRunnerServiceTest extends TestCase
 
         /** @var \Mockery\MockInterface|GithubStatusService $githubMock */
         $githubMock = \Mockery::mock(GithubStatusService::class);
-        $githubMock->shouldReceive('postStatus')->with($project, 'beefbeef', 'success', 'It works',
+        $githubMock->shouldReceive('postStatus')->with($commit, 'success', 'It works',
             'http://domain.de/buildLog/5?hash=highlyconfidential')->once();
         $this->app->instance(GithubStatusService::class, $githubMock);
 

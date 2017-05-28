@@ -56,12 +56,12 @@ class HookController extends Controller
             return response('Already checked this revision');
         }
 
-        $this->githubStatusService->postStatus($project, $pushRevision, 'pending', null);
-
         /** @var Commit $commit */
         $commit = $project->commits()->create([
             'hash' => $pushRevision,
         ]);
+
+        $this->githubStatusService->postStatus($commit, 'pending', null);
 
         $this->dispatch(new TestCommit($commit));
 

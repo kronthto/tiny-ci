@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Commit;
 use App\Project;
 use App\Services\GithubStatusService;
 use GuzzleHttp\Client;
@@ -48,8 +49,12 @@ class GithubStatusTest extends TestCase
         $project = new Project([
             'repo' => 'vendor/repo',
         ]);
+        $commit = new Commit([
+            'project' => $project,
+            'hash' => 'f55429aaa7b06e73ab588f84cd4f89636891f50e',
+        ]);
 
-        $service->postStatus($project, 'f55429aaa7b06e73ab588f84cd4f89636891f50e', 'success', 'It worked',
+        $service->postStatus($commit, 'success', 'It worked',
             'http://foo.bar/baz');
 
         $this->assertSame(1, sizeof($container));

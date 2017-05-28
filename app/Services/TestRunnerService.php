@@ -25,8 +25,7 @@ class TestRunnerService
     protected function finalize(Commit $commit, TestProcess $testProcess, string $state, string $message)
     {
         $this->githubStatusService->postStatus(
-            $commit->project,
-            $commit->hash,
+            $commit,
             $state,
             $message,
             $commit->buildUrl()
