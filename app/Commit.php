@@ -17,6 +17,9 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Commit extends Model
 {
+    const TASK_PUSH = 'push';
+    const TASK_PR_MERGE = 'pr-merge';
+
     protected $guarded = ['id', 'passing', 'created_at', 'updated_at'];
 
     /**

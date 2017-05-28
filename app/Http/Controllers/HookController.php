@@ -59,6 +59,7 @@ class HookController extends Controller
         /** @var Commit $commit */
         $commit = $project->commits()->create([
             'hash' => $pushRevision,
+            'task' => Commit::TASK_PUSH,
         ]);
 
         $this->githubStatusService->postStatus($commit, 'pending', null);
