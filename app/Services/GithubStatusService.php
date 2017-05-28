@@ -38,7 +38,7 @@ class GithubStatusService
     {
         $data = [
             'state' => $state,
-            'context' => config('app.contextprefix').'/'.$project->task,
+            'context' => config('app.contextprefix').'/'.'check', // "check" only temporary
         ];
         if (!is_null($message)) {
             $data['description'] = $message;

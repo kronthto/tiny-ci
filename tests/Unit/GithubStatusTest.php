@@ -64,6 +64,11 @@ class GithubStatusTest extends TestCase
 
         $payload = \GuzzleHttp\json_decode($request->getBody()->getContents());
 
+        $context = explode('/', $payload->context);
+        $this->assertNotEmpty($context[0]);
+        $this->assertEquals(config('app.contextprefix'), $context[0]);
+        // $this->assertEquals('check', $context[1]);
+
         $this->assertNotEmpty($payload->context);
         $this->assertEquals('success', $payload->state);
         $this->assertEquals('It worked', $payload->description);
