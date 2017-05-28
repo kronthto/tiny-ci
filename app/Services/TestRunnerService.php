@@ -11,15 +11,19 @@ class TestRunnerService
 
     /** @var GithubStatusService */
     protected $githubStatusService;
+    /** @var GitService */
+    protected $gitService;
 
     /**
      * TestRunnerService constructor.
      *
      * @param GithubStatusService $githubStatusService
+     * @param GitService          $gitService
      */
-    public function __construct(GithubStatusService $githubStatusService)
+    public function __construct(GithubStatusService $githubStatusService, GitService $gitService)
     {
         $this->githubStatusService = $githubStatusService;
+        $this->gitService = $gitService;
     }
 
     protected function finalize(Commit $commit, TestProcess $testProcess, string $state, string $message)
@@ -47,12 +51,11 @@ class TestRunnerService
 
         chdir(storage_path('app/repos/'.$project->slug));
 
-        $gitExec = config('app.gitexec');
         $prepCommands = [
             'export DEBIAN_FRONTEND=noninteractive',
-            "$gitExec fetch",
-            "$gitExec reset --hard",
-            "$gitExec checkout -f ".$commit->hash,
+            $this->gitService->buildCommand('fetch'),
+            $this->gitService->buildCommand('reset --hard'),
+            $this->gitService->buildCommand('checkout -f '.$commit->hash),
         ];
         foreach ($prepCommands as $prepCmd) {
             try {
