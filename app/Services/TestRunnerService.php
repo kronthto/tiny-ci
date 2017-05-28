@@ -70,6 +70,7 @@ class TestRunnerService
 
         chdir(storage_path('app/repos/'.$project->slug));
 
+        putenv('DEBIAN_FRONTEND=noninteractive');
         $prepCommands = [
             'export DEBIAN_FRONTEND=noninteractive',
             $this->gitService->buildCommand('fetch'),
