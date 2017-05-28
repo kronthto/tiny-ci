@@ -49,6 +49,7 @@ class TestRunnerService
         chdir(storage_path('app/repos/'.$project->slug));
 
         $gitExec = config('app.gitexec');
+        putenv('DEBIAN_FRONTEND=noninteractive');
         $prepCommands = [
             'export DEBIAN_FRONTEND=noninteractive',
             "$gitExec fetch",
