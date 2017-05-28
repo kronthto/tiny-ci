@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $project_id
  * @property bool|null $passing
  * @property string|null $joblog
+ * @property string $task
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  * @property Project $project
