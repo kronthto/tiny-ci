@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Commit;
 use App\Exceptions\CommandFailedException;
+use App\Project;
 
 class TestRunnerService
 {
@@ -24,6 +25,24 @@ class TestRunnerService
     {
         $this->githubStatusService = $githubStatusService;
         $this->gitService = $gitService;
+    }
+
+    /**
+     * Determine whether a commit has already been checked.
+     *
+     * @param Project $project
+     * @param string  $hash
+     *
+     * @return bool
+     */
+    public function hasCheckedCommit(Project $project, string $hash): bool
+    {
+        $commit = Commit::query()
+            ->where('project_id', '=', $project->id)
+            ->where('hash', '=', $hash)
+            ->first();
+
+        return (bool) $commit;
     }
 
     protected function finalize(Commit $commit, TestProcess $testProcess, string $state, string $message)
