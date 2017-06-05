@@ -132,6 +132,7 @@ class WebhookApiTest extends TestCase
             ['X-GitHub-Event' => 'push']);
 
         $response->assertStatus(202);
+        $response->assertSeeText('1/1 Jobs');
         Queue::assertPushed(TestCommit::class, function (TestCommit $job) {
             $r = new ReflectionObject($job);
             $p = $r->getProperty('commit');

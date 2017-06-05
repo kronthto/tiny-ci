@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Commit;
 use App\Jobs\TestCommit;
+use App\Project;
 use App\Services\GithubStatusService;
 use App\Services\ProjectResolver;
 use App\Services\TestRunnerService;
@@ -18,6 +19,9 @@ class HookController extends Controller
     protected $testRunnerService;
     /** @var ProjectResolver */
     protected $projectResolver;
+
+    /** @var array|EvalJob[] */
+    protected $evalJobs;
 
     /**
      * HookController constructor.
@@ -48,47 +52,70 @@ class HookController extends Controller
     {
         $project = $this->projectResolver->bySlug($slug);
         $payload = $request->json()->all();
+        $this->evalJobs = [];
 
         switch ($request->header('X-GitHub-Event')) {
             case 'push':
-                $commit = $this->handlePushEvent($payload);
-                $task = Commit::TASK_PUSH;
+                $error = $this->handlePushEvent($payload);
                 break;
 
             default:
-                $commit = response('Event handler not implemented', 501);
+                $error = response('Event handler not implemented', 501);
         }
 
-        if ($commit instanceof Response) {
-            return $commit;
+        if ($error) {
+            return $error;
         }
-        // If it's not a response we assume it is a string representing the resolved revision
-        if ($this->testRunnerService->hasCheckedCommit($project, $commit)) {
-            return response('Already checked this revision');
+
+        $queued = 0;
+        foreach ($this->evalJobs as $commit) {
+            if ($this->checkAndQueueJob($project, $commit)) {
+                ++$queued;
+            }
+        }
+
+        if ($queued == 0) {
+            return response('Already checked everything for this event');
+        }
+
+        return response($queued.'/'.sizeof($this->evalJobs).' Jobs queued', 202);
+    }
+
+    /**
+     * Check whether the commit has already been checked. If not, queue it.
+     *
+     * @param Project $project
+     * @param EvalJob $job
+     *
+     * @return bool whether something has been queued
+     */
+    protected function checkAndQueueJob(Project $project, EvalJob $job): bool
+    {
+        if ($this->testRunnerService->hasCheckedCommit($project, $job->hash)) {
+            return false;
         }
 
         /** @var Commit $commit */
-        /** @noinspection PhpUndefinedVariableInspection */
         $commit = $project->commits()->create([
-            'hash' => $commit,
-            'task' => $task,
+            'hash' => $job->hash,
+            'task' => $job->task,
         ]);
 
         $this->githubStatusService->postStatus($commit, 'pending', null);
 
         $this->dispatch(new TestCommit($commit));
 
-        return response('Job queued', 202);
+        return true;
     }
 
     /**
-     * Returns the commit to be checked for the given push.
+     * Extracts the commit-hash for the given push or returns an error response.
      *
      * @param $payload
      *
-     * @return Response|string
+     * @return Response|null
      */
-    protected function handlePushEvent($payload)
+    protected function handlePushEvent($payload): ?Response
     {
         if (!isset($payload['after'])) {
             return response('Need a revision to check', 400);
@@ -100,6 +127,17 @@ class HookController extends Controller
             return response('Doing nothing on delete / 000.. events');
         }
 
-        return $pushRevision;
+        $job = new EvalJob();
+        $job->hash = $pushRevision;
+        $job->task = Commit::TASK_PUSH;
+        $this->evalJobs[] = $job;
+
+        return null;
     }
+}
+
+class EvalJob
+{
+    public $hash;
+    public $task;
 }
