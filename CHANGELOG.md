@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## [Unreleased]
+
+## [1.0.0] - 2017-06-05
+## Upgrading from 0.x
+- The `context` for the GitHub status is no longer adjustable (always *push* now), so you may need to adjust the required checks of your protected branches
+- Optionally, also add the PR event to your webhooks
+
 ### Added
 - Handling of PR events
 
@@ -29,5 +35,6 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/).
 - Webhook API
 - Test config parsing & running
 
-[Unreleased]: https://github.com/kronthto/tiny-ci/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/kronthto/tiny-ci/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/kronthto/tiny-ci/compare/v0.2.0...v1.0.0
 [0.2.0]: https://github.com/kronthto/tiny-ci/compare/v0.1.0...v0.2.0

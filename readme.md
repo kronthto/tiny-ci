@@ -12,6 +12,7 @@ This tool strives to be a lightweight testing automation utility for your privat
 * Test preparation and script configurable via [config-file](#test-build-configuration)
 * Return results to Github using [Statuses](https://developer.github.com/v3/repos/statuses/)
 * Track and provide build-log via protected URL
+* Support for `push` & `pull_request` webhooks
 
 ## Install
 
@@ -30,7 +31,7 @@ $ ./artisan migrate
 ## Setting up a project
 
 * Add your project to the *projects* table: `repo` should be in Github syntax (*vendor/project*); freely choose a slug and secret.
-* Setup an `application/json` webhook for the push-event with the chosen secret to the URL *https://tiny-ci.your.domain/api/hook/myslug*
+* Setup an `application/json` webhook for the push-/PR-event with the chosen secret to the URL *https://tiny-ci.your.domain/api/hook/myslug*
 * Checkout the project to test in *storage/app/repos/myslug/*
 
 ### Test-build configuration
