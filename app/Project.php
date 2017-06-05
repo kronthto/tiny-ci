@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $secret
  * @property string $slug
  * @property string $repo
- * @property string $task
  * @property Commit[] $commits
  */
 class Project extends Model

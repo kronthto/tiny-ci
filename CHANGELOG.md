@@ -4,8 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/).
 
 ## [Unreleased]
+### Added
+- Handling of PR events
+
 ### Fixed
 - Also use `putenv` to set *DEBIAN_FRONTEND=noninteractive*
+
+### Removed
+- Possibility to set task label in DB
 
 ## [0.2.0] - 2017-05-20
 ### Added

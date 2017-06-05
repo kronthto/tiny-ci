@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Project;
+use App\Commit;
 use GuzzleHttp\Client;
 
 class GithubStatusService
@@ -28,17 +28,16 @@ class GithubStatusService
     /**
      * Updates the status of a commit.
      *
-     * @param Project     $project
-     * @param string      $sha
+     * @param Commit      $commit
      * @param string      $state
      * @param null|string $message
      * @param null|string $url
      */
-    public function postStatus(Project $project, string $sha, string $state, ?string $message, ?string $url = null)
+    public function postStatus(Commit $commit, string $state, ?string $message, ?string $url = null)
     {
         $data = [
             'state' => $state,
-            'context' => config('app.contextprefix').'/'.$project->task,
+            'context' => config('app.contextprefix').'/'.$commit->task,
         ];
         if (!is_null($message)) {
             $data['description'] = $message;
@@ -48,7 +47,7 @@ class GithubStatusService
         }
 
         $this->client->post(
-            "/repos/{$project->repo}/statuses/$sha",
+            "/repos/{$commit->project->repo}/statuses/{$commit->hash}",
             [
                 'json' => $data,
             ]

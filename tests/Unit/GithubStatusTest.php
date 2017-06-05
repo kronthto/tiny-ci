@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Commit;
 use App\Project;
 use App\Services\GithubStatusService;
 use GuzzleHttp\Client;
@@ -48,8 +49,13 @@ class GithubStatusTest extends TestCase
         $project = new Project([
             'repo' => 'vendor/repo',
         ]);
+        $commit = new Commit([
+            'project' => $project,
+            'hash' => 'f55429aaa7b06e73ab588f84cd4f89636891f50e',
+            'task' => 'pushorpr'
+        ]);
 
-        $service->postStatus($project, 'f55429aaa7b06e73ab588f84cd4f89636891f50e', 'success', 'It worked',
+        $service->postStatus($commit, 'success', 'It worked',
             'http://foo.bar/baz');
 
         $this->assertSame(1, sizeof($container));
@@ -63,6 +69,11 @@ class GithubStatusTest extends TestCase
         );
 
         $payload = \GuzzleHttp\json_decode($request->getBody()->getContents());
+
+        $context = explode('/', $payload->context);
+        $this->assertNotEmpty($context[0]);
+        $this->assertEquals(config('app.contextprefix'), $context[0]);
+        $this->assertEquals('pushorpr', $context[1]);
 
         $this->assertNotEmpty($payload->context);
         $this->assertEquals('success', $payload->state);

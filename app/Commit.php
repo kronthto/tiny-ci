@@ -10,12 +10,15 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $project_id
  * @property bool|null $passing
  * @property string|null $joblog
+ * @property string $task
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  * @property Project $project
  */
 class Commit extends Model
 {
+    const TASK_PUSH = 'push';
+
     protected $guarded = ['id', 'passing', 'created_at', 'updated_at'];
 
     /**
