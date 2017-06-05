@@ -157,4 +157,80 @@ class WebhookApiTest extends TestCase
             return $commit->hash === '2000000000000000000000000000000000000000';
         });
     }
+
+    /**
+     * A PR should queue a check job for its HEAD.
+     */
+    public function testItAcceptsPRs()
+    {
+        $project = new Project([
+            'slug' => 'testproject',
+        ]);
+        $newCommit = new Commit([
+            'hash' => '1000000000000000000000000000000000000001',
+            'task' => 'push',
+            'project' => $project,
+        ]);
+        /** @var \Mockery\MockInterface|HasMany $commitsRelation */
+        $commitsRelation = \Mockery::mock(HasMany::class);
+        $commitsRelation->shouldReceive('create')->with([
+            'hash' => '1000000000000000000000000000000000000001',
+            'task' => 'push',
+        ])->once()->andReturn($newCommit);
+        /** @var \Mockery\MockInterface|Project $project */
+        $project = \Mockery::instanceMock($project);
+        $project->shouldReceive('commits')->andReturn($commitsRelation);
+        $this->fakeProjectResolve = $project;
+
+        /** @var \Mockery\MockInterface|TestRunnerService $testRunnerServiceMock */
+        $testRunnerServiceMock = \Mockery::mock(TestRunnerService::class);
+        $testRunnerServiceMock->shouldReceive('hasCheckedCommit')->with(Project::class,
+            '1000000000000000000000000000000000000001')
+            ->andReturn(false);
+        $this->app->instance(TestRunnerService::class, $testRunnerServiceMock);
+
+        /** @var \Mockery\MockInterface|GithubStatusService $githubMock */
+        $githubMock = \Mockery::mock(GithubStatusService::class);
+        $githubMock->shouldReceive('postStatus')->with($newCommit, 'pending', null)->once();
+        $this->app->instance(GithubStatusService::class, $githubMock);
+
+        // Forget the instance to have it re-build with the service mock
+        $this->app->forgetInstance(HookController::class);
+
+        Queue::fake();
+
+        /** @var \Illuminate\Foundation\Testing\TestResponse|\Illuminate\Http\Response $response */
+        $response = $this->postJson('/api/hook/testproject', [
+            'action' => 'opened',
+            'pull_request' => [
+                'head' => [
+                    'sha' => '1000000000000000000000000000000000000001',
+                ],
+            ],
+        ],
+            ['X-GitHub-Event' => 'pull_request']);
+
+        $response->assertStatus(202);
+        $response->assertSeeText('1/1 Jobs');
+        Queue::assertPushed(TestCommit::class, function (TestCommit $job) {
+            $r = new ReflectionObject($job);
+            $p = $r->getProperty('commit');
+            $p->setAccessible(true);
+            /** @var Commit $commit */
+            $commit = $p->getValue($job);
+
+            return $commit->project->slug === 'testproject' && $commit->hash === '1000000000000000000000000000000000000001' && $commit->task === Commit::TASK_PUSH;
+        });
+    }
+
+    /**
+     * We do not need to check on every event Github fires.
+     */
+    public function testItDoesNothingOnIrrelevantPREvents()
+    {
+        /** @var \Illuminate\Foundation\Testing\TestResponse|\Illuminate\Http\Response $response */
+        $responseDeleted = $this->postJson('/api/hook/testproject', ['action' => 'labeled'],
+            ['X-GitHub-Event' => 'pull_request']);
+        $responseDeleted->assertSeeText('Not handling');
+    }
 }

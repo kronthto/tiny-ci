@@ -59,6 +59,10 @@ class HookController extends Controller
                 $error = $this->handlePushEvent($payload);
                 break;
 
+            case 'pull_request':
+                $error = $this->handlePR($payload);
+                break;
+
             default:
                 $error = response('Event handler not implemented', 501);
         }
@@ -129,6 +133,29 @@ class HookController extends Controller
 
         $job = new EvalJob();
         $job->hash = $pushRevision;
+        $job->task = Commit::TASK_PUSH;
+        $this->evalJobs[] = $job;
+
+        return null;
+    }
+
+    /**
+     * Extracts the commits to check for the given PR or returns an error response.
+     *
+     * @param $payload
+     *
+     * @return Response|null
+     */
+    protected function handlePR($payload): ?Response
+    {
+        if ($payload['action'] != 'opened' && $payload['action'] != 'synchronize' && $payload['action'] != 'reopened') {
+            return response('Not handling PR action '.$payload['action']);
+        }
+
+        $pr = $payload['pull_request'];
+
+        $job = new EvalJob();
+        $job->hash = $pr['head']['sha'];
         $job->task = Commit::TASK_PUSH;
         $this->evalJobs[] = $job;
 
