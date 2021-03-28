@@ -40,7 +40,7 @@ class GithubStatusService
             'context' => config('app.contextprefix').'/'.$commit->task,
         ];
         if (!is_null($message)) {
-            $data['description'] = $message;
+            $data['description'] = \Illuminate\Support\Str::limit($message, 140);
         }
         if (!is_null($url)) {
             $data['target_url'] = $url;
